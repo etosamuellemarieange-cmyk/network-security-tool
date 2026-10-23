@@ -1,0 +1,28 @@
+﻿name: Docker image security scan
+
+on:
+  push:
+    branches: [main, 'feature/**']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  trivy-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build --pull -t network-security-tool:${{ github.sha }} .
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: network-security-tool:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          severity: HIGH,CRITICAL
